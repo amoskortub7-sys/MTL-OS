@@ -1,0 +1,6 @@
+<manifest package="com.mtl.systemui" xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
+        android:allowBackup="false"
+        android:label="MTL SystemUI"
+        android:icon="@android:drawable/sym_def_app_icon" />
+</manifest>

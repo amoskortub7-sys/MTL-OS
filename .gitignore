@@ -1,0 +1,20 @@
+# Large local build artifacts
+*.img
+*.xz
+*.zip
+
+# Generated build outputs
+/dist/
+/staged_system/
+
+# Local AOSP base download (kept local, not pushed)
+aosp_base/*.img
+aosp_base/*.xz
+
+# Python caches
+__pycache__/
+*.pyc
+
+# OS/editor
+.DS_Store
+.vscode/

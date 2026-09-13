@@ -1,0 +1,50 @@
+{
+  "project": "MTL OS1",
+  "target_device": {
+    "device_family": "Custom 5G Smartphone",
+    "chipset": "MediaTek Dimensity 7400 Ultra 5G",
+    "ram": "12GB",
+    "storage": "512GB UFS 3.1",
+    "battery": "6500mAh",
+    "biometrics": "In-display optical fingerprint scanner",
+    "display": {
+      "type": "Curved AMOLED",
+      "front_camera": "Single 50MP top-right punch-hole",
+      "aspect_ratio": "Default modern smartphone ratio"
+    },
+    "rear_camera": {
+      "layout": "Horizontal island across top back panel",
+      "modules": [
+        "50MP Main Wide",
+        "50MP Telephoto",
+        "8MP Ultra-Wide",
+        "LED Flash"
+      ],
+      "main_sensor": "Sony LYT-700C",
+      "sensor_size": "1/1.56\"",
+      "lens": "7P glass lens",
+      "aperture": "f/1.8",
+      "ois": true,
+      "anti_reflective_coating": true,
+      "video": "4K @ 30fps with EIS"
+    },
+    "protection": {
+      "ip_rating": "IP54",
+      "sealing": [
+        "Rubber gaskets on SIM tray and USB-C port",
+        "Hydrophobic mesh on speaker and microphone grilles",
+        "Perimeter frame adhesive sealing"
+      ]
+    }
+  },
+  "android_target": {
+    "base": "AOSP GSI / Android 16 compatible",
+    "overlay_strategy": "Keep AOSP engine, replace user-visible layer with MTL Flow UI",
+    "kernel_and_vendor": "Requires exact device vendor tree and board support package"
+  },
+  "build_status": {
+    "ui_overlay": "implemented as project scaffold",
+    "rom_flashable": "not complete without exact device tree, vendor blobs, and signed images",
+    "target_fit": "compatible hardware profile for a future device-specific build"
+  }
+}

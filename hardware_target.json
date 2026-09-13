@@ -1,8 +1,12 @@
 {
   "project": "MTL OS1",
   "target_device": {
+    "model_name": "MTL-OG1",
+    "device_type": "Custom OEM prototype",
+    "not_a_retail_phone": true,
     "device_family": "Custom 5G Smartphone",
     "chipset": "MediaTek Dimensity 7400 Ultra 5G",
+    "cpu_arch": "arm64-v8a",
     "ram": "12GB",
     "storage": "512GB UFS 3.1",
     "battery": "6500mAh",
@@ -35,16 +39,22 @@
         "Hydrophobic mesh on speaker and microphone grilles",
         "Perimeter frame adhesive sealing"
       ]
+    },
+    "bootloader": {
+      "status": "Unlocked factory engineering build",
+      "fastboot_unlock_enabled_by_default": true,
+      "flash_method": "fastboot"
     }
   },
   "android_target": {
-    "base": "AOSP GSI / Android 16 compatible",
+    "base": "Stock Android 16 AOSP GSI (aosp_arm64-ab)",
+    "vendor_package": "MediaTek BSP driver package",
     "overlay_strategy": "Keep AOSP engine, replace user-visible layer with MTL Flow UI",
-    "kernel_and_vendor": "Requires exact device vendor tree and board support package"
+    "kernel_and_vendor": "Requires exact OEM board support package and vendor BSP integration"
   },
   "build_status": {
     "ui_overlay": "implemented as project scaffold",
-    "rom_flashable": "not complete without exact device tree, vendor blobs, and signed images",
-    "target_fit": "compatible hardware profile for a future device-specific build"
+    "device_specific_flashable_rom": "not complete without exact OEM board tree, vendor blobs, and signed images",
+    "target_fit": "aligned to the MTL-OG1 prototype build path"
   }
 }

@@ -6,6 +6,10 @@
 # Generated build outputs
 /dist/
 /staged_system/
+/app/build/
+/build/
+/local.properties
+/.gradle/
 
 # Local AOSP base download (kept local, not pushed)
 aosp_base/*.img

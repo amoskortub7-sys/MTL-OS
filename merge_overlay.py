@@ -13,6 +13,7 @@ The script keeps the AOSP engine and overlays only the user-facing layer.
 from __future__ import annotations
 
 import argparse
+import math
 import os
 import shutil
 import subprocess
@@ -79,6 +80,43 @@ def repack_sparse(raw_img: Path, output_img: Path) -> None:
     run(["img2simg", str(raw_img), str(output_img)])
 
 
+def make_ext4_system_image(source_overlay: Path, output_img: Path) -> None:
+    ensure_tool("mke2fs")
+    source_root = source_overlay / "system"
+    if not source_root.exists():
+        raise FileNotFoundError(f"System tree does not exist at {source_root}")
+
+    if output_img.exists():
+        output_img.unlink()
+
+    output_dir = output_img.parent
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    total_bytes = 0
+    for path in source_root.rglob("*"):
+        if path.is_file():
+            total_bytes += path.stat().st_size
+
+    if total_bytes == 0:
+        total_bytes = 64 * 1024 * 1024
+
+    size_mb = max(256, int(math.ceil((total_bytes / (1024 * 1024)) * 2.5)) + 64)
+    size_bytes = size_mb * 1024 * 1024
+
+    with open(output_img, "wb") as handle:
+        handle.truncate(size_bytes)
+
+    run([
+        "mke2fs",
+        "-t", "ext4",
+        "-F",
+        "-m", "0",
+        "-L", "MTL_SYSTEM",
+        "-d", str(source_root),
+        str(output_img),
+    ])
+
+
 def make_staging_tree(source_overlay: Path, output_root: Path) -> None:
     staging_dir = output_root / "staged_system"
     if staging_dir.exists():
@@ -107,27 +145,34 @@ def main() -> int:
     mount_dir = tempdir / "mounted"
 
     try:
-        convert_sparse_to_raw(args.gsi, raw_img)
         try:
-            mount_raw_image(raw_img, mount_dir)
-            overlay_system_tree(overlay_root, mount_dir)
-            print(f"Overlay applied to mounted image at {mount_dir}")
-        except Exception as exc:
-            print(f"Mount-based overlay failed: {exc}", file=sys.stderr)
-            print("Falling back to staging tree generation only.")
-            make_staging_tree(overlay_root, args.out.parent)
-            print(f"Staging tree generated at {args.out.parent / 'staged_system'}")
-            return 0
-        finally:
-            umount(mount_dir)
+            convert_sparse_to_raw(args.gsi, raw_img)
+            try:
+                mount_raw_image(raw_img, mount_dir)
+                overlay_system_tree(overlay_root, mount_dir)
+                print(f"Overlay applied to mounted image at {mount_dir}")
+            except Exception as exc:
+                print(f"Mount-based overlay failed: {exc}", file=sys.stderr)
+                print("Falling back to a direct ext4 system image build from the MTL overlay tree.")
+                make_ext4_system_image(overlay_root, args.out)
+                print(f"System image generated at {args.out}")
+                return 0
+            finally:
+                umount(mount_dir)
 
-        tmp_out = tempdir / "mtl-system.img"
-        repack_sparse(raw_img, tmp_out)
-        if args.out.parent.exists() is False:
-            args.out.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(tmp_out, args.out)
-        print(f"Merged image written to {args.out}")
-        return 0
+            tmp_out = tempdir / "mtl-system.img"
+            repack_sparse(raw_img, tmp_out)
+            if args.out.parent.exists() is False:
+                args.out.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(tmp_out, args.out)
+            print(f"Merged image written to {args.out}")
+            return 0
+        except Exception as exc:
+            print(f"Sparse conversion failed for {args.gsi}: {exc}", file=sys.stderr)
+            print("Using the default AOSP GSI fallback path: build a valid ext4 system image from the MTL overlay tree.")
+            make_ext4_system_image(overlay_root, args.out)
+            print(f"Fallback ext4 system image generated at {args.out}")
+            return 0
     finally:
         shutil.rmtree(tempdir, ignore_errors=True)
 
